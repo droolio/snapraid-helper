@@ -12,7 +12,7 @@
 #   5) when sync finishes, it sends an email with the output to user.
 #
 # $Author: therealjmc
-# $Version: 2.0
+# $Version: 2.1
 #
 # Originally inspired by bash script written by sidney for linux/bash
 # Based on the powershell script written by lrissman at gmail dot com
@@ -20,6 +20,9 @@
 #######################################################################
 ###################### CHANGELOG ######################################
 #######################################################################
+#
+# Version 2.1 (2014/03/14)
+# Added SnapRAIDConfig to ini file and included it as passing arguments to snapraid (fixes bug from Task sheduler when working directory was not set to snapraid dir)
 #
 # Version 2.0 (2014/03/13)
 # Release on codeplex
