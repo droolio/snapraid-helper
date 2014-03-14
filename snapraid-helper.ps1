@@ -385,12 +385,13 @@ Function ServiceManagement ($startstop){
 
 Function RunSnapraid ($sargument){
 	$exe = $config["SnapRAIDPath"] + $config["SnapRAIDExe"]
+	$configfile = $config["SnapRAIDPath"] + $config["SnapRAIDConfig"]
 	if ($sargument -ne "fullscrub") {
-		& "$exe" $sargument -l $SnapRAIDLogfile 2>&1 3>&1 4>&1 | %{ "$_" } | tee-object –file $TmpOutput –append
+		& "$exe" -c $configfile $sargument -l $SnapRAIDLogfile 2>&1 3>&1 4>&1 | %{ "$_" } | tee-object –file $TmpOutput –append
 	}
 	else {
 		$sargument = "scrub"
-		& "$exe" $sargument -p 100 -o 0 -l $SnapRAIDLogfile 2>&1 3>&1 4>&1 | %{ "$_" } | tee-object –file $TmpOutput –append
+		& "$exe" -c $configfile $sargument -p 100 -o 0 -l $SnapRAIDLogfile 2>&1 3>&1 4>&1 | %{ "$_" } | tee-object –file $TmpOutput –append
 	}
 	#$TmpOutputInRAM = Get-Content $TmpOutput  -readcount 100 -delim "`0" 
 	# NOTE the above Get-Content command is VERY VERY VERY VERY slow, so I am using the .Net function below to get the output of the Snapraid command into a variable
