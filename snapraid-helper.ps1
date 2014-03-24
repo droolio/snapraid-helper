@@ -12,7 +12,7 @@
 #   5) when sync finishes, it sends an email with the output to user.
 #
 # $Author: therealjmc
-# $Version: 2.1
+# $Version: 2.2 (2013/03/24)
 #
 # Originally inspired by bash script written by sidney for linux/bash
 # Based on the powershell script written by lrissman at gmail dot com
@@ -20,6 +20,9 @@
 #######################################################################
 ###################### CHANGELOG ######################################
 #######################################################################
+#
+# Version 2.2 (2014/03/24)
+# Fixed a small cosmetic bug regarding Eventlog on the first script run
 #
 # Version 2.1 (2014/03/14)
 # Added SnapRAIDConfig to ini file and included it as passing arguments to snapraid (fixes bug from Task sheduler when working directory was not set to snapraid dir)
@@ -288,7 +291,7 @@ Function Send-Email ($fSubject,$fSuccess,$EmailBody){
 		$EventlogID = 4712
 	}
 	
-	if (!(Get-Eventlog -Source SnapRaid-Helper -LogName Application)){
+	if (!(Get-Eventlog -Source SnapRaid-Helper -LogName Application -ErrorAction SilentlyContinue)){
 		New-EventLog -Source SnapRaid-Helper -LogName Application
 	}
 	write-eventlog -logname Application -source SnapRaid-Helper -eventID $EventlogID -message $fSubject
