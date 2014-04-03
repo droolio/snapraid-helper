@@ -12,7 +12,7 @@
 #   5) when sync finishes, it sends an email with the output to user.
 #
 # $Author: therealjmc
-# $Version: 2.2 (2014/03/24)
+# $Version: 2.3 (2014/04/03)
 #
 # Originally inspired by bash script written by sidney for linux/bash
 # Based on the powershell script written by lrissman at gmail dot com
@@ -20,6 +20,9 @@
 #######################################################################
 ###################### CHANGELOG ######################################
 #######################################################################
+#
+# Version 2.3 (2014/04/03)
+# Added syncandfix option
 #
 # Version 2.2 (2014/03/24)
 # Fixed a small cosmetic bug regarding Eventlog on the first script run
@@ -56,6 +59,7 @@
 # - If argument passed is "syncandcheck" (without the "") there will be a sync (if needed) before a check is called
 # - If argument passed is "syncandscrub" (without the "") there will be a sync (if needed) before a scrub is called (scrub without any parameters, snapraid default)
 # - If argument passed is "syncandfullscrub" (without the "") there will be a sync (if needed) before a full scrub is called (-p 100 -o 0 as parameters)
+# - If argument passed is "syncandfix" (without the "") there will be a sync (if needed) before a fix option (without any parameters) is done. Usefull for fixable errors in parity i.e.
 #
 # NOTE TO USERS WITH SPECIAL CHARACTERS IN FILE/FOLDER NAMES:
 # I had a problem with German Umlauts not beeing displayed correct. Enable UTF8Console in the .ini
@@ -861,6 +865,37 @@ ElseIf ($Argument1 -eq "syncandscrub" -and $SomethingDone -ne 1) {
 	ServiceManagement "start"
 	$CurrentDate = Get-Date
 	$message = "SUCCESS: SnapRAID SYNC and SCRUB Job finished on $CurrentDate"
+	WriteExtendedLogFile $message
+	Start-Post-Process
+	$subject = $config["SubjectPrefix"]+" "+$message
+	Send-Email $subject "success" $EmailBody
+	$SomethingDone = 1
+}
+ElseIf ($Argument1 -eq "syncandfix" -and $SomethingDone -ne 1) {
+	$argument = "diff"
+	RunSnapraid $argument
+	If ($global:Diffchanges -eq 1){
+		if ($config["SkipParityFilesAtStart"] -eq 1 -and $global:PreProcessHasRun -eq 0){ 
+			Start-Pre-Process
+			Check-Parity-Files
+		}
+		# If enabled take services offline
+		ServiceManagement "stop"
+		$argument = "sync"
+		RunSnapraid $argument
+	}
+	if ($config["SkipParityFilesAtStart"] -eq 1 -and $global:PreProcessHasRun -eq 0){ 
+		Start-Pre-Process
+		Check-Parity-Files
+	}
+	# If enabled take services offline
+	ServiceManagement "stop"
+	$argument = "fix"
+	RunSnapraid $argument
+	# If enabled bring services back online
+	ServiceManagement "start"
+	$CurrentDate = Get-Date
+	$message = "SUCCESS: SnapRAID SYNC and FIX Job finished on $CurrentDate"
 	WriteExtendedLogFile $message
 	Start-Post-Process
 	$subject = $config["SubjectPrefix"]+" "+$message
