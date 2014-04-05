@@ -12,7 +12,7 @@
 #   5) when sync finishes, it sends an email with the output to user.
 #
 # $Author: therealjmc
-# $Version: 2.4 (2014/04/05)
+# $Version: 2.5 (2014/04/05)
 #
 # Originally inspired by bash script written by sidney for linux/bash
 # Based on the powershell script written by lrissman at gmail dot com
@@ -20,6 +20,9 @@
 #######################################################################
 ###################### CHANGELOG ######################################
 #######################################################################
+#
+# Version 2.5 (2014/04/05)
+# Added EnableDebugOutput Variable, if set to 1 all variables will be printed before snapraid starts
 #
 # Version 2.4 (2014/04/05)
 # Fixed a wrong info about the location of the output files in the ini file
@@ -631,7 +634,6 @@ if ($config["EventLogEnable"] -eq 1){
 			write-host "$element is null, please add a value"
 			$ConfigError ++
 		}
-		
 	}
 	$EventLogEntryTypeList = $config["EventLogEntryType"].Replace('"',"").Trim().Split(",")
 	$EventLogSourcesList = $config["EventLogSources"].Replace('"',"").Trim().Split(",")
@@ -738,6 +740,13 @@ if (Test-Path $EmailBodyZip){
 }
 if (Test-Path $SnapRAIDLogfile){
 	Remove-Item $SnapRAIDLogfile
+}
+
+if ($config["EnableDebugOutput"] -eq 1) {
+	$ConfigConfigs = (Get-Content $ConfigFile) -notmatch "^;" -match "\S"
+	foreach ($element in $ConfigConfigs){
+		echo $element
+	}
 }
 
 #Log Management Section
