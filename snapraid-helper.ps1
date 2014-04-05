@@ -12,7 +12,7 @@
 #   5) when sync finishes, it sends an email with the output to user.
 #
 # $Author: therealjmc
-# $Version: 2.3 (2014/04/03)
+# $Version: 2.4 (2014/04/05)
 #
 # Originally inspired by bash script written by sidney for linux/bash
 # Based on the powershell script written by lrissman at gmail dot com
@@ -20,6 +20,9 @@
 #######################################################################
 ###################### CHANGELOG ######################################
 #######################################################################
+#
+# Version 2.4 (2014/04/05)
+# Fixed a wrong info about the location of the output files in the ini file
 #
 # Version 2.3 (2014/04/03)
 # Added syncandfix option
