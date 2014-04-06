@@ -12,7 +12,7 @@
 #   5) when sync finishes, it sends an email with the output to user.
 #
 # $Author: therealjmc
-# $Version: 2.5 (2014/04/05)
+# $Version: 2.5.1 (2014/04/06)
 #
 # Originally inspired by bash script written by sidney for linux/bash
 # Based on the powershell script written by lrissman at gmail dot com
@@ -20,6 +20,9 @@
 #######################################################################
 ###################### CHANGELOG ######################################
 #######################################################################
+#
+# Version 2.5.1 (2014/04/06)
+# Added some more Debug Output to find a user reported Error
 #
 # Version 2.5 (2014/04/05)
 # Added EnableDebugOutput Variable, if set to 1 all variables will be printed before snapraid starts
@@ -743,9 +746,14 @@ if (Test-Path $SnapRAIDLogfile){
 }
 
 if ($config["EnableDebugOutput"] -eq 1) {
-	$ConfigConfigs = (Get-Content $ConfigFile) -notmatch "^;" -match "\S"
-	foreach ($element in $ConfigConfigs){
+	foreach ($element in $Config){
 		echo $element
+		echo "TmpOutput = $TmpOutput"
+		echo "EmailBody = $EmailBody"
+		echo "EmailBodyTmp = $EmailBodyTmp"
+		echo "EmailBodyTxt = $EmailBodyTxt"
+		echo "EmailBodyZip = $EmailBodyZip"
+		echo "SnapRAIDLogfile = $SnapRAIDLogfile"
 	}
 }
 
