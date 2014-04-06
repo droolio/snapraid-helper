@@ -12,7 +12,7 @@
 #   5) when sync finishes, it sends an email with the output to user.
 #
 # $Author: therealjmc
-# $Version: 2.5.1 (2014/04/06)
+# $Version: 2.5.2 (2014/04/06)
 #
 # Originally inspired by bash script written by sidney for linux/bash
 # Based on the powershell script written by lrissman at gmail dot com
@@ -20,6 +20,9 @@
 #######################################################################
 ###################### CHANGELOG ######################################
 #######################################################################
+#
+# Version 2.5.2 (2014/04/06)
+# Looks like a small encoding bug in the script. Should fix "A positional parameter cannot be found that accepts argument[...]" error
 #
 # Version 2.5.1 (2014/04/06)
 # Added some more Debug Output to find a user reported Error
@@ -406,11 +409,11 @@ Function RunSnapraid ($sargument){
 	$exe = $config["SnapRAIDPath"] + $config["SnapRAIDExe"]
 	$configfile = $config["SnapRAIDPath"] + $config["SnapRAIDConfig"]
 	if ($sargument -ne "fullscrub") {
-		& "$exe" -c $configfile $sargument -l $SnapRAIDLogfile 2>&1 3>&1 4>&1 | %{ "$_" } | tee-object –file $TmpOutput –append
+		& "$exe" -c $configfile $sargument -l $SnapRAIDLogfile 2>&1 3>&1 4>&1 | %{ "$_" } | tee-object -file $TmpOutput -append
 	}
 	else {
 		$sargument = "scrub"
-		& "$exe" -c $configfile $sargument -p 100 -o 0 -l $SnapRAIDLogfile 2>&1 3>&1 4>&1 | %{ "$_" } | tee-object –file $TmpOutput –append
+		& "$exe" -c $configfile $sargument -p 100 -o 0 -l $SnapRAIDLogfile 2>&1 3>&1 4>&1 | %{ "$_" } | tee-object -file $TmpOutput -append
 	}
 	#$TmpOutputInRAM = Get-Content $TmpOutput  -readcount 100 -delim "`0" 
 	# NOTE the above Get-Content command is VERY VERY VERY VERY slow, so I am using the .Net function below to get the output of the Snapraid command into a variable
