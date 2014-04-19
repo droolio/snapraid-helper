@@ -12,7 +12,7 @@
 #   5) when sync finishes, it sends an email with the output to user.
 #
 # $Author: therealjmc
-# $Version: 2.5.2 (2014/04/06)
+# $Version: 2.6 (2014/04/19)
 #
 # Originally inspired by bash script written by sidney for linux/bash
 # Based on the powershell script written by lrissman at gmail dot com
@@ -20,6 +20,9 @@
 #######################################################################
 ###################### CHANGELOG ######################################
 #######################################################################
+#
+# Version 2.6 (2014/04/19)
+# Added a way to influence the percentage of a default scrub run with optional -scrubpercent option 
 #
 # Version 2.5.2 (2014/04/06)
 # Looks like a small encoding bug in the script. Should fix "A positional parameter cannot be found that accepts argument[...]" error
@@ -72,6 +75,7 @@
 # - If argument passed is "syncandscrub" (without the "") there will be a sync (if needed) before a scrub is called (scrub without any parameters, snapraid default)
 # - If argument passed is "syncandfullscrub" (without the "") there will be a sync (if needed) before a full scrub is called (-p 100 -o 0 as parameters)
 # - If argument passed is "syncandfix" (without the "") there will be a sync (if needed) before a fix option (without any parameters) is done. Usefull for fixable errors in parity i.e.
+# - If -scrubpercent is added after the argument you can influence the percentage snapraid scrubs
 #
 # NOTE TO USERS WITH SPECIAL CHARACTERS IN FILE/FOLDER NAMES:
 # I had a problem with German Umlauts not beeing displayed correct. Enable UTF8Console in the .ini
@@ -81,7 +85,7 @@
 #######################################################################
 #Enable to pass the check/scrub command to SnapRAID as a parameter for the Powershellscript
 #Has to be the first non-comment and non-blank line, otherwise param won't work.
-Param([string]$Argument1='sync')
+Param([string]$Argument1='sync',[int]$ScrubPercent=999)
 $Argument1 = $Argument1.ToLower()
 
 <#
@@ -409,7 +413,12 @@ Function RunSnapraid ($sargument){
 	$exe = $config["SnapRAIDPath"] + $config["SnapRAIDExe"]
 	$configfile = $config["SnapRAIDPath"] + $config["SnapRAIDConfig"]
 	if ($sargument -ne "fullscrub") {
-		& "$exe" -c $configfile $sargument -l $SnapRAIDLogfile 2>&1 3>&1 4>&1 | %{ "$_" } | tee-object -file $TmpOutput -append
+		if (($ScrubPercent -ne 999) -and ($sargument -eq "scrub")) {
+			& "$exe" -c $configfile $sargument -p $ScrubPercent -l $SnapRAIDLogfile 2>&1 3>&1 4>&1 | %{ "$_" } | tee-object -file $TmpOutput -append
+		}
+		else {
+			& "$exe" -c $configfile $sargument -l $SnapRAIDLogfile 2>&1 3>&1 4>&1 | %{ "$_" } | tee-object -file $TmpOutput -append
+		}
 	}
 	else {
 		$sargument = "scrub"
