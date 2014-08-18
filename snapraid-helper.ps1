@@ -12,7 +12,7 @@
 #   5) when sync finishes, it sends an email with the output to user.
 #
 # $Author: therealjmc
-# $Version: 2.6 (2014/04/19)
+# $Version: 2.7 (2014/08/18)
 #
 # Originally inspired by bash script written by sidney for linux/bash
 # Based on the powershell script written by lrissman at gmail dot com
@@ -20,6 +20,9 @@
 #######################################################################
 ###################### CHANGELOG ######################################
 #######################################################################
+#
+# Version 2.7 (2014/08/18)
+# Fixed writing to eventlog if email is disabled
 #
 # Version 2.6 (2014/04/19)
 # Added a way to influence the percentage of a default scrub run with optional -scrubpercent option 
@@ -230,6 +233,16 @@ Function Send-Email ($fSubject,$fSuccess,$EmailBody){
 	#$fSuccess -- "success" = success email, "error" = error email, "error2" = error email script/snapraid running
 	$Body = ""
 	
+	if ($fSuccess -eq "success") {
+		$EventlogID = 4711
+	}
+	if ($fSuccess -eq "error") {
+		$EventlogID = 4712
+	}
+	if ($fSuccess -eq "error2") {
+		$EventlogID = 4712
+	}
+	
 	if ($fSuccess -ne "error2") {
 		if ($config["IncludeExtendedInfoZip"] -eq 1 ){
 			If (Test-Path $EmailBodyTmp) {
@@ -274,7 +287,6 @@ Function Send-Email ($fSubject,$fSuccess,$EmailBody){
 				$att.Dispose()
 			}
 		}
-		$EventlogID = 4711
 	}
 	if (($fSuccess -eq "error") -and ($config["EmailOnError"] -eq 1) -and ($config["EmailEnable"] -eq 1)) {
 		if ($config["IncludeExtendedInfo"] -eq 1 ){
@@ -302,13 +314,11 @@ Function Send-Email ($fSubject,$fSuccess,$EmailBody){
 				$att.Dispose()
 			}
 		}
-		$EventlogID = 4712
 	}
 	if (($fSuccess -eq "error2") -and ($config["EmailOnError"] -eq 1) -and ($config["EmailEnable"] -eq 1)) {
 		$MailMessage.Subject = $fSubject
 		$Mailmessage.Body 	= $fSubject
 		$smtpclient.Send($MailMessage)
-		$EventlogID = 4712
 	}
 	
 	if (!(Get-Eventlog -Source SnapRaid-Helper -LogName Application -ErrorAction SilentlyContinue)){
