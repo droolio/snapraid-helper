@@ -12,7 +12,7 @@
 #   5) when sync finishes, it sends an email with the output to user.
 #
 # $Author: therealjmc
-# $Version: 2.7 (2014/08/18)
+# $Version: 2.8 (2014/12/03)
 #
 # Originally inspired by bash script written by sidney for linux/bash
 # Based on the powershell script written by lrissman at gmail dot com
@@ -20,6 +20,10 @@
 #######################################################################
 ###################### CHANGELOG ######################################
 #######################################################################
+#
+# Version 2.8 (2014/12/03)
+# Added SnapRAIDStatusAfterScrub to get a snapraid status after scrubbing
+# Fixed a bug where snapraid-output of diff would be attached twice in logfile
 #
 # Version 2.7 (2014/08/18)
 # Fixed writing to eventlog if email is disabled
@@ -424,15 +428,15 @@ Function RunSnapraid ($sargument){
 	$configfile = $config["SnapRAIDPath"] + $config["SnapRAIDConfig"]
 	if ($sargument -ne "fullscrub") {
 		if (($ScrubPercent -ne 999) -and ($sargument -eq "scrub")) {
-			& "$exe" -c $configfile $sargument -p $ScrubPercent -l $SnapRAIDLogfile 2>&1 3>&1 4>&1 | %{ "$_" } | tee-object -file $TmpOutput -append
+			& "$exe" -c $configfile $sargument -p $ScrubPercent -l $SnapRAIDLogfile 2>&1 3>&1 4>&1 | %{ "$_" } | tee-object -file $TmpOutput 
 		}
 		else {
-			& "$exe" -c $configfile $sargument -l $SnapRAIDLogfile 2>&1 3>&1 4>&1 | %{ "$_" } | tee-object -file $TmpOutput -append
+			& "$exe" -c $configfile $sargument -l $SnapRAIDLogfile 2>&1 3>&1 4>&1 | %{ "$_" } | tee-object -file $TmpOutput 
 		}
 	}
 	else {
 		$sargument = "scrub"
-		& "$exe" -c $configfile $sargument -p 100 -o 0 -l $SnapRAIDLogfile 2>&1 3>&1 4>&1 | %{ "$_" } | tee-object -file $TmpOutput -append
+		& "$exe" -c $configfile $sargument -p 100 -o 0 -l $SnapRAIDLogfile 2>&1 3>&1 4>&1 | %{ "$_" } | tee-object -file $TmpOutput 
 	}
 	#$TmpOutputInRAM = Get-Content $TmpOutput  -readcount 100 -delim "`0" 
 	# NOTE the above Get-Content command is VERY VERY VERY VERY slow, so I am using the .Net function below to get the output of the Snapraid command into a variable
@@ -562,7 +566,7 @@ Get-Content $ConfigFile | foreach {
 ##### Validate configuration variables are sane
 
 #SnapRAID and LogFile Config
-$SnapRAIDConfigs = "SnapRAIDDelThreshold","SnapRAIDPath","SnapRAIDExe","SnapRAIDContentFiles","SnapRAIDParityFiles","TmpOutputFile","LogFileName","LogFileMaxSize","LogFileZipCount","UTF8Console"
+$SnapRAIDConfigs = "SnapRAIDDelThreshold","SnapRAIDPath","SnapRAIDExe","SnapRAIDContentFiles","SnapRAIDParityFiles","TmpOutputFile","LogFileName","LogFileMaxSize","LogFileZipCount","UTF8Console","SnapRAIDStatusAfterScrub"
 foreach ($element in $SnapRAIDConfigs){
 	if (!($config[$element]) -or ($config[$element] -eq "")) {
 		write-host "$element is null, please add a value"
@@ -903,6 +907,10 @@ ElseIf ($Argument1 -eq "syncandscrub" -and $SomethingDone -ne 1) {
 	ServiceManagement "stop"
 	$argument = "scrub"
 	RunSnapraid $argument
+	if ($config["SnapRAIDStatusAfterScrub"] -eq 1) {
+		$argument = "status"
+		RunSnapraid $argument
+	}
 	# If enabled bring services back online
 	ServiceManagement "start"
 	$CurrentDate = Get-Date
