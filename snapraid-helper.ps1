@@ -12,7 +12,7 @@
 #   5) when sync finishes, it sends an email with the output to user.
 #
 # $Author: therealjmc
-# $Version: 2.8 (2014/12/03)
+# $Version: 2.9 (2015/01/27)
 #
 # Originally inspired by bash script written by sidney for linux/bash
 # Based on the powershell script written by lrissman at gmail dot com
@@ -20,6 +20,9 @@
 #######################################################################
 ###################### CHANGELOG ######################################
 #######################################################################
+#
+# Version 2.9 (2015/01/27)
+# Fixed a small cosmetic bug in the logrotation
 #
 # Version 2.8 (2014/12/03)
 # Added SnapRAIDStatusAfterScrub to get a snapraid status after scrubbing
@@ -789,6 +792,9 @@ if (Test-Path "$LogFile") {
 	If ($file.length -ge $config["LogFileMaxSize"]){
 		if ($config["LogFileZipCount"] -ge 1) {
 			$i = $config["LogFileZipCount"]
+			if (Test-Path "$LogFile.$i.zip") {
+				Remove-Item "$LogFile.$i.zip"
+			}
 			while ($i -gt 1) {
 				$j = $i - 1
 				if (Test-Path "$LogFile.$j.zip") {
