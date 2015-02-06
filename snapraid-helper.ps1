@@ -12,7 +12,7 @@
 #   5) when sync finishes, it sends an email with the output to user.
 #
 # $Author: therealjmc
-# $Version: 2.9 (2015/01/27)
+# $Version: 3.0 (2015/02/06)
 #
 # Originally inspired by bash script written by sidney for linux/bash
 # Based on the powershell script written by lrissman at gmail dot com
@@ -20,6 +20,9 @@
 #######################################################################
 ###################### CHANGELOG ######################################
 #######################################################################
+#
+# Version 3.0 (2015/02/06)
+# Added a switch to shorten to logfile to just 1 line per percentage
 #
 # Version 2.9 (2015/01/27)
 # Fixed a small cosmetic bug in the logrotation
@@ -441,20 +444,59 @@ Function RunSnapraid ($sargument){
 		$sargument = "scrub"
 		& "$exe" -c $configfile $sargument -p 100 -o 0 -l $SnapRAIDLogfile 2>&1 3>&1 4>&1 | %{ "$_" } | tee-object -file $TmpOutput 
 	}
-	#$TmpOutputInRAM = Get-Content $TmpOutput  -readcount 100 -delim "`0" 
-	# NOTE the above Get-Content command is VERY VERY VERY VERY slow, so I am using the .Net function below to get the output of the Snapraid command into a variable
-	# NOTE the .Net function breaks german Umlauts so I'm using this fast way with get-content and out-string - no real time difference to .Net function
-	$TmpOutputInRAM = (Get-Content $TmpOutput | Out-string)
 	if ($config["IncludeExtendedInfoZip"] -eq 1 ){
 		$FileToAdd = $EmailBodyTmp
 	}
 	else {
 		$FileToAdd = $EmailBody
 	}
-	foreach ($line in $TmpOutputInRAM){
-		Add-Content $FileToAdd $line
-		# since output is done with tee it isn't necessary to use write-host again
-		# Write-Host $line
+	if ($config["ShortenLogFile"] -eq 1 ){
+		$TmpOutputInRAM = Get-Content $TmpOutput -ReadCount 0
+		
+		for ($i=0; $i -lt $TmpOutputInRAM.length; $i++)
+		{
+			if ($TmpOutputInRAM[$i] -match "[0-9]*[A-Z]")
+			{
+				if ($TmpOutputInRAM[$i+1] -match "[0-9]*[A-Z]")
+				{
+					$TmpOutputInRAM_First_Three = $TmpOutputInRAM[$i+1].substring(0,3)
+					if ($TmpOutputInRAM_First_Three.Substring(0,1) -match "[0-9]")
+					{
+						if ($TmpOutputInRAM[$i].startswith($TmpOutputInRAM_First_Three)) 
+						{
+						}
+						else
+						{
+							Add-Content $FileToAdd $TmpOutputInRAM[$i]
+						}
+					}
+					else
+					{
+						Add-Content $FileToAdd $TmpOutputInRAM[$i]
+					}
+				}
+				else
+				{
+					if ($TmpOutputInRAM[$i+2] -notmatch "Autosaving...")
+                    {
+                        Add-Content $FileToAdd $TmpOutputInRAM[$i]
+                    }
+				}
+			}
+		}
+	}
+	else
+	{
+		#$TmpOutputInRAM = Get-Content $TmpOutput  -readcount 100 -delim "`0" 
+		# NOTE the above Get-Content command is VERY VERY VERY VERY slow, so I am using the .Net function below to get the output of the Snapraid command into a variable
+		# NOTE the .Net function breaks german Umlauts so I'm using this fast way with get-content and out-string - no real time difference to .Net function
+		$TmpOutputInRAM = (Get-Content $TmpOutput | Out-string)
+		
+		foreach ($line in $TmpOutputInRAM){
+			Add-Content $FileToAdd $line
+			# since output is done with tee it isn't necessary to use write-host again
+			# Write-Host $line
+		}
 	}
 	if (!($LastExitCode -eq "0")) {
 		# If enabled bring services back online
@@ -600,7 +642,7 @@ else {
 $LogFile=$config["LogPath"] + $config["LogFileName"]
 
 #Email Configs
-$EmailConfigs = "SubjectPrefix","EmailTo","EmailFrom","Body","SMTPHost","SMTPSSLEnable","SMTPAuthEnable","EmailBodyFile","EmailBodyFileZip","EmailEnable","SMTPPort","EmailOnSuccess","EmailOnError","IncludeExtendedInfo","IncludeExtendedInfoZip","LogFileMaxSizeZIP","MaxAttachSize"
+$EmailConfigs = "SubjectPrefix","EmailTo","EmailFrom","Body","SMTPHost","SMTPSSLEnable","SMTPAuthEnable","EmailBodyFile","EmailBodyFileZip","EmailEnable","SMTPPort","EmailOnSuccess","EmailOnError","IncludeExtendedInfo","IncludeExtendedInfoZip","LogFileMaxSizeZIP","MaxAttachSize","ShortenLogFile"
 #If email is enabled, validate email configs are not null
 if ($config["EmailEnable"] -eq 1){
 	foreach ($element in $EmailConfigs){
