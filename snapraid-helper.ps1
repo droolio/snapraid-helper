@@ -12,7 +12,7 @@
 #   5) when sync finishes, it sends an email with the output to user.
 #
 # $Author: therealjmc
-# $Version: 3.0 (2015/02/06)
+# $Version: 3.1 (2015/02/09)
 #
 # Originally inspired by bash script written by sidney for linux/bash
 # Based on the powershell script written by lrissman at gmail dot com
@@ -20,6 +20,9 @@
 #######################################################################
 ###################### CHANGELOG ######################################
 #######################################################################
+#
+# Version 3.1 (2015/02/09)
+# Fixed miss-formated output from status if shorten logfile enabled
 #
 # Version 3.0 (2015/02/06)
 # Added a switch to shorten to logfile to just 1 line per percentage
@@ -89,6 +92,9 @@
 # - If argument passed is "syncandfullscrub" (without the "") there will be a sync (if needed) before a full scrub is called (-p 100 -o 0 as parameters)
 # - If argument passed is "syncandfix" (without the "") there will be a sync (if needed) before a fix option (without any parameters) is done. Usefull for fixable errors in parity i.e.
 # - If -scrubpercent is added after the argument you can influence the percentage snapraid scrubs
+# - Added optional snapraid status output after scrubbing
+# - Added option to shorten the logfile to just 1 line per percent
+# - Various other fixes/enhancements
 #
 # NOTE TO USERS WITH SPECIAL CHARACTERS IN FILE/FOLDER NAMES:
 # I had a problem with German Umlauts not beeing displayed correct. Enable UTF8Console in the .ini
@@ -450,7 +456,7 @@ Function RunSnapraid ($sargument){
 	else {
 		$FileToAdd = $EmailBody
 	}
-	if ($config["ShortenLogFile"] -eq 1 ){
+	if (($config["ShortenLogFile"] -eq 1 ) -and ($sargument -ne "status" )){
 		$TmpOutputInRAM = Get-Content $TmpOutput -ReadCount 0
 		
 		for ($i=0; $i -lt $TmpOutputInRAM.length; $i++)
