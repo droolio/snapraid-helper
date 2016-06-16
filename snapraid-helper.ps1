@@ -12,7 +12,7 @@
 #   5) when sync finishes, it sends an email with the output to user.
 #
 # $Author: therealjmc
-# $Version: 3.2 (2015/05/16)
+# $Version: 3.3 (2016/06/16)
 #
 # Originally inspired by bash script written by sidney for linux/bash
 # Based on the powershell script written by lrissman at gmail dot com
@@ -20,6 +20,9 @@
 #######################################################################
 ###################### CHANGELOG ######################################
 #######################################################################
+#
+# Version 3.3 (2016/06/16)
+# Cleanup of example ini file (Thanks @ Marco)
 #
 # Version 3.2 (2015/05/16)
 # Fixed the SnapRAID 8.1 diff exit code 2 if a change is needed
