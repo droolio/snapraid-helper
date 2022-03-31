@@ -771,6 +771,7 @@ if ($config["EmailEnable"] -eq 1) {
 	$MailMessage.To.add($config["EmailTo"])
 	if ($config["SMTPSSLEnable"] -eq 1) {
 		$SMTPClient.EnableSsl = $true
+		[System.Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 	}
 	else {
 		$SMTPClient.EnableSsl = $false
